@@ -82,26 +82,26 @@ function validate(ValidatableInput: Validatable) {
     typeof ValidatableInput.value === "string"
   ) {
     isValid =
-      isValid && ValidatableInput.value.length > ValidatableInput.minLength;
+      isValid && ValidatableInput.value.length >= ValidatableInput.minLength;
   }
   if (
     ValidatableInput.maxLength != null &&
     typeof ValidatableInput.value === "string"
   ) {
     isValid =
-      isValid && ValidatableInput.value.length < ValidatableInput.maxLength;
+      isValid && ValidatableInput.value.length <= ValidatableInput.maxLength;
   }
   if (
     ValidatableInput.min != null &&
     typeof ValidatableInput.value === "number"
   ) {
-    isValid = isValid && ValidatableInput.value > ValidatableInput.min;
+    isValid = isValid && ValidatableInput.value >= ValidatableInput.min;
   }
   if (
     ValidatableInput.max != null &&
     typeof ValidatableInput.value === "number"
   ) {
-    isValid = isValid && ValidatableInput.value < ValidatableInput.max;
+    isValid = isValid && ValidatableInput.value <= ValidatableInput.max;
   }
   return isValid;
 }
@@ -151,6 +151,31 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   abstract configure(): void;
   abstract renderContent(): void;
 }
+//ProjectItem Class
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+  private project: Project;
+
+  get persons() {
+    if (this.project.people === 1) {
+      return "1 person";
+    } else {
+      return `${this.project.people} persons`;
+    }
+  }
+  constructor(hostId: string, project: Project) {
+    super("single-project", hostId, false, project.id);
+    this.project = project;
+
+    this.configure();
+    this.renderContent();
+  }
+  configure() {}
+  renderContent() {
+    this.element.querySelector("h2")!.textContent = this.project.title;
+    this.element.querySelector("h3")!.textContent = this.persons + " assigned.";
+    this.element.querySelector("p")!.textContent = this.project.description;
+  }
+}
 
 //ProjectList Class
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
@@ -187,9 +212,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     )! as HTMLUListElement;
     listEl.innerHTML = "";
     for (const prjItem of this.assignedProjects) {
-      const listItem = document.createElement("li"); //! as HTMLLIElement;
-      listItem.textContent = prjItem.title;
-      listEl.appendChild(listItem);
+      new ProjectItem(this.element.querySelector("ul")!.id, prjItem);
     }
   }
 }

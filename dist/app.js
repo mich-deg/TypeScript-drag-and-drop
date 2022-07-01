@@ -56,20 +56,20 @@ function validate(ValidatableInput) {
     if (ValidatableInput.minLength != null &&
         typeof ValidatableInput.value === "string") {
         isValid =
-            isValid && ValidatableInput.value.length > ValidatableInput.minLength;
+            isValid && ValidatableInput.value.length >= ValidatableInput.minLength;
     }
     if (ValidatableInput.maxLength != null &&
         typeof ValidatableInput.value === "string") {
         isValid =
-            isValid && ValidatableInput.value.length < ValidatableInput.maxLength;
+            isValid && ValidatableInput.value.length <= ValidatableInput.maxLength;
     }
     if (ValidatableInput.min != null &&
         typeof ValidatableInput.value === "number") {
-        isValid = isValid && ValidatableInput.value > ValidatableInput.min;
+        isValid = isValid && ValidatableInput.value >= ValidatableInput.min;
     }
     if (ValidatableInput.max != null &&
         typeof ValidatableInput.value === "number") {
-        isValid = isValid && ValidatableInput.value < ValidatableInput.max;
+        isValid = isValid && ValidatableInput.value <= ValidatableInput.max;
     }
     return isValid;
 }
@@ -97,6 +97,28 @@ class Component {
     }
     attach(insertAtBeginning) {
         this.hostElement.insertAdjacentElement(insertAtBeginning ? "afterbegin" : "beforeend", this.element);
+    }
+}
+class ProjectItem extends Component {
+    constructor(hostId, project) {
+        super("single-project", hostId, false, project.id);
+        this.project = project;
+        this.configure();
+        this.renderContent();
+    }
+    get persons() {
+        if (this.project.people === 1) {
+            return "1 person";
+        }
+        else {
+            return `${this.project.people} persons`;
+        }
+    }
+    configure() { }
+    renderContent() {
+        this.element.querySelector("h2").textContent = this.project.title;
+        this.element.querySelector("h3").textContent = this.persons + " assigned.";
+        this.element.querySelector("p").textContent = this.project.description;
     }
 }
 class ProjectList extends Component {
@@ -129,9 +151,7 @@ class ProjectList extends Component {
         const listEl = document.getElementById(`${this.type}-projects-list`);
         listEl.innerHTML = "";
         for (const prjItem of this.assignedProjects) {
-            const listItem = document.createElement("li");
-            listItem.textContent = prjItem.title;
-            listEl.appendChild(listItem);
+            new ProjectItem(this.element.querySelector("ul").id, prjItem);
         }
     }
 }
